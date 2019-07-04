@@ -1,0 +1,187 @@
+
+﻿# userdel -r hadoop	//if hadoop user already in system
+
+# useradd hadoop 	//Add user hadoop
+# passwd hadoop		//set password for hadoop user
+#visudo 		//give administrative privilages to hadoop user
+Press ‘i’ for insert mode 
+
+insert following line after (Line number 92)
+root ALL=(ALL) 	ALL
+
+hadoop ALL=(ALL) 	ALL
+Press esc key then :wq
+
+# su - hadoop
+$ ssh-keygen -t rsa  (Press Enter key )			//security key generation
+$ cat  ~/.ssh/id_rsa.pub >>  ~/.ssh/authorized_keys
+$ chmod 0600 ~/.ssh/authorized_keys
+$ ssh localhost
+$ exit
+$ reboot
+
+login with root user
+
+#su hadoop
+$sudo gedit /etc/sysctl.conf
+
+For getting your IPv6 disable in your Linux machine, you need to update /etc/sysctl.conf by adding following line of codes at end of the file.
+# disable Ipv6
+	net.ipv6.conf.all.disable_ipv6 = 1
+	net.ipv6.conf.default.disable_ipv6 = 1
+	net.ipv6.conf.lo.disable_ipv6 = 1
+
+save the file 
+
+$ sudo reboot
+
+Download hadoop3.0.0
+$ tar -vxzf hadoop-3.0.0.tar.gz 
+$ cd ~ 			(User home dir)
+$ mv Desktop/hadoop-3.0.0 hadoop
+$ chmod -R 777 hadoop    			//All permissions
+$mkdir -p /home/hadoop/hadoop_tmp/hdfs/namenode
+$mkdir -p /home/hadoop/hadoop_tmp/hdfs/datanode  
+		//$ sudo chown -R hadoop:hadoop /home/hadoop/hadoop_tmp/
+
+
+Setup Environment Variables 
+$ gedit ~/.bashrc
+append following values at end of file.
+
+# User specific aliases and functions
+export JAVA_HOME=/opt/jdk8/
+export PATH=$PATH:$JAVA_HOME
+
+export HADOOP_HOME=/home/hadoop/hadoop
+
+export HADOOP_INSTALL=$HADOOP_HOME
+
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+
+export YARN_HOME=$HADOOP_HOME
+
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+
+export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+
+export PATH=$PATH:$JAVA_HOME/bin
+
+export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
+
+Save and reboot the system
+Login with hadoop user
+Or
+$ source ~/.bashrc  (apply the changes in current running environment)
+
+
+$ cd $HADOOP_HOME/etc/hadoop
+
+$ gedit hadoop-env.sh        (change JAVA_HOME’s line) 
+ 
+	export   JAVA_HOME=/opt/jdk8/
+
+$ gedit core-site.xml
+
+<configuration>
+<property>  
+<name>fs.default.name</name>    
+<value>hdfs://localhost:9000</value>
+</property>
+</configuration>
+
+$ gedit hdfs-site.xml
+<configuration>
+<property> <name>dfs.replication</name>
+<value>1</value>
+</property>
+<property>
+<name>dfs.name.dir</name>
+<value>file:///home/hadoop/hadoop_tmp/hdfs/namenode
+</value>
+</property>
+<property>
+<name>dfs.data.dir</name>
+<value>file:///home/hadoop/hadoop_tmp/hdfs/datanode
+</value>
+</property>
+</configuration>
+
+	//$ cp mapred-site.xml.template mapred-site.xml		//it is not in hadoop3.0.0
+$ gedit mapred-site.xml
+
+<configuration>
+<property>
+<name>mapreduce.framework.name</name>
+<value>yarn</value>
+</property>
+</configuration>
+
+$gedit yarn-site.xml
+
+<configuration>
+<property>
+<name>yarn.nodemanager.aux-services</name>
+<value>mapreduce_shuffle</value>
+</property>
+</configuration>
+
+$rm -r /home/hadoop/hadoop_tmp/hdfs/datanode/current 
+
+$ hdfs namenode –format
+
+
+Output must be----
+
+Storage directory /home/hadoop/hadoopdata/hdfs/namenode has been successfully formatted.
+
+$ cd $HADOOP_HOME/sbin/       (Optional )
+
+Now run start-dfs.sh script.
+
+ $ start-dfs.sh
+
+Now run start-yarn.sh script.
+
+ $ start-yarn.sh
+
+ $ jps		//Java Virtual Machine Process Status Tool to check the all hadoop daemons.
+
+ http://localhost:50070/
+http://localhost:8088/
+http://localhost:50090/
+
+Access port 50075 to get details about DataNode in browser
+   http://localhost:50075/
+
+---------Use this command if you have any error-----------
+
+$ rm -r /tmp/hadoop-(HadoopUserName)
+
+$ rm -r /tmp/hadoop-hadoop 
+
+$ ./hadoop-daemon.sh start namenode       //to start namenode
+(use this command if u have any problem to access datanode  )
+
+-------------------------------------------------------------
+
+Make the HDFS directories
+
+$ hdfs dfs -mkdir /user
+
+$ hdfs dfs -mkdir /user/appin
+
+$ hdfs dfs -ls  /
+
+$ hdfs dfs -ls /user
+
+
+
+
+
+
+
